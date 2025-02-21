@@ -41,7 +41,9 @@ impl Payment {
         self.paytr_token.clone()
     }
 
-    pub fn get_iframe() -> PaytrResponse {}
+    pub fn get_iframe() -> Result<PaytrResponse, Box<dyn std::error::Error>> {
+        (())
+    }
 }
 
 impl CallbackRequest {
