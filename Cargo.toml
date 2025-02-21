@@ -2,11 +2,25 @@
 name = "paytr"
 version = "0.1.0"
 edition = "2021"
-author = ["Oguzhan Dogan"]
-description = ["Paytr Package for Rust"]
+author = "Oguzhan Dogan"
+description = "Paytr Package for Rust"
 
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+base64 = "0.22.1"
+hmac = "0.12.1"
+itoa = "1.0.14"
+serde = "1.0.218"
+serde_json = "1.0.139"
+sha2 = "0.10.8"
+
+
+
+
+[lib]
+
+name = "paytr"
+path = "src/paytr/lib.rs"
