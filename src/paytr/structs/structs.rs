@@ -1,3 +1,6 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
 pub struct Payment {
     pub merchant_id: String,
     pub merchant_key: String,
@@ -22,6 +25,7 @@ pub struct Payment {
     pub lang: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PaytrResponse {
     pub status: i16,
     pub token: String,
