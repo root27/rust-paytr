@@ -2,8 +2,11 @@ use crate::structs::structs::{CallbackRequest, Payment, PaytrResponse};
 use base64::engine::{general_purpose, Engine as _};
 use hmac::{Hmac, Mac};
 use itoa;
+use reqwest::blocking::Client;
 use serde_json;
+use serde_urlencoded;
 use sha2::Sha256;
+use std::collections::HashMap;
 
 impl Payment {
     pub fn basket_config<T: serde::Serialize>(&mut self, cart: &[Vec<T>]) {
@@ -41,8 +44,18 @@ impl Payment {
         self.paytr_token.clone()
     }
 
-    pub fn get_iframe() -> Result<PaytrResponse, Box<dyn std::error::Error>> {
-        (())
+    pub fn get_iframe(&self) -> Result<PaytrResponse, reqwest::Error> {
+        let client = Client::new();
+        let form_data = serde_urlencoded::to_string(self).expect("Failed to encode form data");
+
+        let res = client
+            .post("https://www.paytr.com/odeme/api/get-token")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(form_data)
+            .send()?;
+
+        let response: PaytrResponse = res.json()?;
+        Ok(response)
     }
 }
 
