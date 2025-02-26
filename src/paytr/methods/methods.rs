@@ -6,7 +6,6 @@ use reqwest::blocking::Client;
 use serde_json;
 use serde_urlencoded;
 use sha2::Sha256;
-use std::collections::HashMap;
 
 impl Payment {
     pub fn basket_config<T: serde::Serialize>(&mut self, cart: &[Vec<T>]) {
@@ -20,7 +19,7 @@ impl Payment {
     pub fn generate_token(&mut self, merchant_key: &str, merchant_salt: &str) -> String {
         let mut buffer = itoa::Buffer::new();
 
-        let hash_string = self.merchant_id
+        let hash_string = self.merchant_id.clone()
             + &self.user_ip
             + &self.merchant_oid
             + &self.email
@@ -54,7 +53,8 @@ impl Payment {
             .body(form_data)
             .send()?;
 
-        let response: PaytrResponse = res.json()?;
+        let response = res.json::<PaytrResponse>()?;
+
         Ok(response)
     }
 }
