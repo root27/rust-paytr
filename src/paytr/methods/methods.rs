@@ -1,5 +1,5 @@
 use crate::structs::structs::{CallbackRequest, Payment, PaytrResponse};
-use base64::engine::{general_purpose, Engine as _};
+use base64::engine::{Engine as _, general_purpose};
 use hmac::{Hmac, Mac};
 use itoa;
 use reqwest::blocking::Client;
@@ -16,7 +16,7 @@ impl Payment {
         }
     }
 
-    pub fn generate_token(&mut self, merchant_key: &str, merchant_salt: &str) -> String {
+    pub fn generate_token(&mut self, merchant_key: String, merchant_salt: String) {
         let mut buffer = itoa::Buffer::new();
 
         let hash_string = self.merchant_id.clone()
@@ -39,8 +39,6 @@ impl Payment {
 
         self.merchant_key = merchant_key.to_string();
         self.merchant_salt = merchant_salt.to_string();
-
-        self.paytr_token.clone()
     }
 
     pub fn get_iframe(&self) -> Result<PaytrResponse, reqwest::Error> {

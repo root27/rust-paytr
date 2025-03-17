@@ -32,6 +32,7 @@ pub struct PaytrResponse {
     pub reason: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CallbackRequest {
     pub installment_count: i16,
     pub merchant_id: String,
