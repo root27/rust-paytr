@@ -58,7 +58,7 @@ impl Payment {
 }
 
 impl CallbackRequest {
-    pub fn is_valid(&mut self, merchant_key: &str, merchant_salt: &str) -> bool {
+    pub fn is_valid(&mut self, merchant_key: String, merchant_salt: String) -> bool {
         let mut buffer = itoa::Buffer::new();
 
         let token_str = format!(
