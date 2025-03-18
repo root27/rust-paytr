@@ -2,7 +2,7 @@ use crate::structs::structs::{CallbackRequest, Payment, PaytrResponse};
 use base64::engine::{Engine as _, general_purpose};
 use hmac::{Hmac, Mac};
 use itoa;
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde_json;
 use serde_urlencoded;
 use sha2::Sha256;
@@ -10,7 +10,7 @@ use sha2::Sha256;
 impl Payment {
     pub fn basket_config<T: serde::Serialize>(&mut self, cart: &[Vec<T>]) {
         if let Ok(json) = serde_json::to_string(cart) {
-            self.basket = general_purpose::STANDARD.encode(json);
+            self.user_basket = general_purpose::STANDARD.encode(json);
         } else {
             panic!("Failed to serialize basket");
         }
@@ -23,10 +23,10 @@ impl Payment {
             + &self.user_ip
             + &self.merchant_oid
             + &self.email
-            + &self.basket
+            + &self.user_basket
             + &self.currency
             + &self.test_mode
-            + buffer.format(self.total_amount)
+            + buffer.format(self.payment_amount)
             + buffer.format(self.no_installment)
             + buffer.format(self.max_installment);
         let pay_token = hash_string + &self.merchant_salt;
@@ -41,7 +41,7 @@ impl Payment {
         self.merchant_salt = merchant_salt.to_string();
     }
 
-    pub fn get_iframe(&self) -> Result<PaytrResponse, reqwest::Error> {
+    pub async fn get_iframe(&self) -> Result<PaytrResponse, reqwest::Error> {
         let client = Client::new();
         let form_data = serde_urlencoded::to_string(self).expect("Failed to encode form data");
 
@@ -49,9 +49,10 @@ impl Payment {
             .post("https://www.paytr.com/odeme/api/get-token")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body(form_data)
-            .send()?;
+            .send()
+            .await?;
 
-        let response = res.json::<PaytrResponse>()?;
+        let response = res.json::<PaytrResponse>().await?;
 
         Ok(response)
     }
