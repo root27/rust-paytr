@@ -1,1 +1,5 @@
 /target
+
+/example/target
+/example/.env
+/example/thunder-rs
