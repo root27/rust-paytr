@@ -1,15 +1,14 @@
 use crate::structs::structs::{CallbackRequest, Payment, PaytrResponse};
 use base64::engine::{Engine as _, general_purpose};
 use hmac::{Hmac, Mac};
-use itoa;
+use itoa::Buffer;
 use reqwest::Client;
 use serde_json;
-use serde_urlencoded;
 use sha2::Sha256;
 
 impl Payment {
     pub fn basket_config<T: serde::Serialize>(&mut self, cart: &[Vec<T>]) {
-        if let Ok(json) = serde_json::to_string(cart) {
+        if let Ok(json) = serde_json::to_vec(cart) {
             self.user_basket = general_purpose::STANDARD.encode(json);
         } else {
             panic!("Failed to serialize basket");
@@ -17,28 +16,29 @@ impl Payment {
     }
 
     pub fn generate_token(&mut self, merchant_key: String, merchant_salt: String) {
-        let mut buffer = itoa::Buffer::new();
+        let mut buffer = Buffer::new();
 
         let hash_string = self.merchant_id.clone()
-            + &self.user_ip
-            + &self.merchant_oid
-            + &self.email
-            + &self.user_basket
-            + &self.currency
-            + &self.test_mode
-            + buffer.format(self.payment_amount)
-            + buffer.format(self.no_installment)
-            + buffer.format(self.max_installment);
-        let pay_token = hash_string + &self.merchant_salt;
+        + &self.user_ip
+        + &self.merchant_oid
+        + &self.email
+        + buffer.format(self.payment_amount)  // Fix order: Move payment_amount before user_basket
+        + &self.user_basket
+        + buffer.format(self.no_installment)
+        + buffer.format(self.max_installment)
+        + &self.currency
+        + &self.test_mode;
+
+        let pay_token = hash_string + &merchant_salt; // Append merchant_salt at the end
 
         let mut hmac_token = Hmac::<Sha256>::new_from_slice(merchant_key.as_bytes())
             .expect("HMAC can take key of any size");
         hmac_token.update(pay_token.as_bytes());
         let result = hmac_token.finalize().into_bytes();
-        self.paytr_token = general_purpose::STANDARD.encode(result);
 
-        self.merchant_key = merchant_key.to_string();
-        self.merchant_salt = merchant_salt.to_string();
+        self.paytr_token = general_purpose::STANDARD.encode(result);
+        self.merchant_key = merchant_key;
+        self.merchant_salt = merchant_salt;
     }
 
     pub async fn get_iframe(&self) -> Result<PaytrResponse, reqwest::Error> {
