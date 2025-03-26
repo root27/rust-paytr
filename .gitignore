@@ -1,5 +1,9 @@
 /target
-
+/examples/axum_example/target
+/examples/axum_example/.env
+/examples/thunder/thunder-rs
+/examples/thunder/target
+/examples/thunder/.env
 /example/target
 /example/.env
 /example/thunder-rs
